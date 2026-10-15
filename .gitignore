@@ -13,8 +13,9 @@ pip-log.txt
 pip-delete-this-directory.txt
 
 # Reportes y capturas
-reports/
+reports/screenshots/
 *.html
+!reports/reporte.html
 screenshots/
 
 # Variables de entorno
