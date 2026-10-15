@@ -130,7 +130,28 @@ class PaginaInventario:
         """Agrega el primer producto al carrito."""
         primer_producto = self.obtener_primer_producto()
         boton = primer_producto.find_element(*self.boton_agregar_carrito)
-        boton.click()
+        # Usar JavaScript click para evitar problemas de intercepción
+        self.driver.execute_script("arguments[0].click();", boton)
+        # Espera para que se actualice el badge (cambio de texto y aparición del badge)
+        import time
+        time.sleep(1)
+    
+    def agregar_producto_al_carrito(self, indice: int) -> None:
+        """
+        Agrega un producto al carrito por índice.
+        
+        Args:
+            indice: Índice del producto (0-based)
+        """
+        productos = self.obtener_productos()
+        if 0 <= indice < len(productos):
+            boton = productos[indice].find_element(*self.boton_agregar_carrito)
+            boton.click()
+            # Espera para que se actualice el badge (cambio de texto y aparición del badge)
+            import time
+            time.sleep(1)
+        else:
+            raise IndexError(f"Índice {indice} fuera de rango")
     
     def agregar_producto_al_carrito(self, indice: int) -> None:
         """
@@ -148,20 +169,36 @@ class PaginaInventario:
     
     def ir_al_carrito(self) -> None:
         """Navega a la página del carrito."""
-        esperar_y_click(self.driver, self.boton_carrito)
+        boton_carrito = self.driver.find_element(*self.boton_carrito)
+        self.driver.execute_script("arguments[0].click();", boton_carrito)
+        import time
+        time.sleep(1)
     
-    def obtener_contador_carrito(self) -> int:
+    def obtener_contador_carrito(self, tiempo_espera: int = 5) -> int:
         """
         Obtiene el número de items en el carrito (badge).
+        
+        Args:
+            tiempo_espera: Tiempo máximo para esperar el badge
         
         Returns:
             Cantidad de items (0 si no hay badge visible)
         """
-        try:
-            contador = esperar_visible(self.driver, self.contador_carrito)
-            return int(contador.text)
-        except:
-            return 0
+        from selenium.common.exceptions import NoSuchElementException
+        import time
+        
+        # Reintentar varias veces con pausas cortas
+        for intento in range(tiempo_espera * 2):  # cada 0.5s
+            try:
+                contador = self.driver.find_element(*self.contador_carrito)
+                texto = contador.text.strip()
+                if texto:
+                    return int(texto)
+            except Exception:
+                pass
+            time.sleep(0.5)
+        
+        return 0
     
     def esta_menu_hamburguesa_visible(self) -> bool:
         """Verifica si el menú hamburguesa está visible."""

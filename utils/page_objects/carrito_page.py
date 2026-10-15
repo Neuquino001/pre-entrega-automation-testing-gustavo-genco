@@ -161,7 +161,10 @@ class PaginaCarrito:
     
     def continuar_comprando(self) -> None:
         """Hace click en 'Continue Shopping' y vuelve al inventario."""
-        esperar_y_click(self.driver, self.boton_continuar_comprando)
+        boton = self.driver.find_element(*self.boton_continuar_comprando)
+        self.driver.execute_script("arguments[0].click();", boton)
+        import time
+        time.sleep(1)
     
     def ir_a_checkout(self) -> None:
         """Hace click en 'Checkout' para ir al proceso de pago."""
